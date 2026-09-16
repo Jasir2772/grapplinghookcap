@@ -1,12 +1,11 @@
 package com.example.grapplinghook;
 
 import com.example.grapplinghook.config.ConfigManager;
+import com.example.grapplinghook.economy.PlayerPointsBridge;
 import com.example.grapplinghook.listeners.GrappleListener;
 import com.example.grapplinghook.shop.ShopGUI;
 import com.example.grapplinghook.shop.ShopListener;
 import com.example.grapplinghook.utils.ItemUtils;
-import org.black_ixx.PlayerPoints;
-import org.black_ixx.PlayerPointsAPI;
 import org.bukkit.NamespacedKey;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -18,7 +17,7 @@ public class GrapplingHookPlugin extends JavaPlugin implements CommandExecutor {
 
     private ConfigManager configManager;
     private NamespacedKey grappleKey;
-    private PlayerPointsAPI playerPointsAPI;
+    private final PlayerPointsBridge playerPoints = new PlayerPointsBridge();
 
     @Override
     public void onEnable() {
@@ -26,13 +25,11 @@ public class GrapplingHookPlugin extends JavaPlugin implements CommandExecutor {
 
         this.configManager = new ConfigManager(this);
 
-        if (!getServer().getPluginManager().isPluginEnabled("PlayerPoints")) {
+        if (!playerPoints.hook(getLogger())) {
             getLogger().severe("PlayerPoints not found or not enabled! Disabling GrapplingHook.");
             getServer().getPluginManager().disablePlugin(this);
             return;
         }
-
-        this.playerPointsAPI = PlayerPoints.getInstance().getAPI();
         getLogger().info("Hooked into PlayerPoints successfully.");
 
         getServer().getPluginManager().registerEvents(new GrappleListener(this), this);
@@ -79,7 +76,7 @@ public class GrapplingHookPlugin extends JavaPlugin implements CommandExecutor {
         return grappleKey;
     }
 
-    public PlayerPointsAPI getPlayerPointsAPI() {
-        return playerPointsAPI;
+    public PlayerPointsBridge getPlayerPoints() {
+        return playerPoints;
     }
-  }
+        }
