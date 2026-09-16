@@ -1,8 +1,8 @@
 package com.example.grapplinghook.shop;
 
 import com.example.grapplinghook.GrapplingHookPlugin;
+import com.example.grapplinghook.economy.PlayerPointsBridge;
 import com.example.grapplinghook.utils.ItemUtils;
-import org.black_ixx.PlayerPointsAPI;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -40,11 +40,11 @@ public class ShopListener implements Listener {
     }
 
     private void purchaseHook(Player player) {
-        PlayerPointsAPI api = plugin.getPlayerPointsAPI();
+        PlayerPointsBridge points = plugin.getPlayerPoints();
         UUID uuid = player.getUniqueId();
         int price = plugin.getConfigManager().getShopPrice();
 
-        int balance = api.look(uuid);
+        int balance = points.look(uuid);
 
         if (balance < price) {
             String msg = plugin.getConfigManager().getMsgNotEnoughPoints()
@@ -54,7 +54,7 @@ public class ShopListener implements Listener {
             return;
         }
 
-        boolean success = api.take(uuid, price);
+        boolean success = points.take(uuid, price);
         if (!success) {
             player.sendMessage(ItemUtils.color("&cTransaction failed, please try again."));
             return;
