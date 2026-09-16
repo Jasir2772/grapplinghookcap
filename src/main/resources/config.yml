@@ -1,0 +1,19 @@
+hook:
+  cooldown-seconds: 3
+  pull-strength: 2.2
+  vertical-boost: 0.35
+  item-name: "&b&lGrappling Hook"
+  item-lore:
+    - "&7Right-click to fire the hook."
+    - "&7Pulls you toward whatever it hits!"
+
+shop:
+  price: 500
+  gui-title: "&8Token Shop"
+  hook-slot: 13
+
+messages:
+  not-enough-points: "&cYou don't have enough points! You need &e%price% &cpoints."
+  purchase-success: "&aYou purchased the Grappling Hook for &e%price% &apoints!"
+  cooldown-active: "&cYour Grappling Hook is on cooldown! Wait &e%seconds%s&c."
+  hook-fired: "&7You fired the Grappling Hook!"
