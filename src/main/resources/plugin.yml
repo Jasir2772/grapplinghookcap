@@ -1,0 +1,25 @@
+name: GrapplingHook
+version: '1.0.0'
+main: com.example.grapplinghook.GrapplingHookPlugin
+api-version: '1.19'
+author: YourName
+description: A grappling hook item purchasable via a Token Shop using PlayerPoints.
+depend: [PlayerPoints]
+
+commands:
+  hookshop:
+    description: Opens the Grappling Hook token shop.
+    usage: /hookshop
+    permission: grapplinghook.shop
+  givehook:
+    description: Gives the Grappling Hook item directly (admin/testing).
+    usage: /givehook
+    permission: grapplinghook.admin
+
+permissions:
+  grapplinghook.shop:
+    description: Allows opening the token shop.
+    default: true
+  grapplinghook.admin:
+    description: Allows giving the hook item directly.
+    default: op
