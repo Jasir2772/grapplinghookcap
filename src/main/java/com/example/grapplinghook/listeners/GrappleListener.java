@@ -2,10 +2,13 @@ package com.example.grapplinghook.listeners;
 
 import com.example.grapplinghook.GrapplingHookPlugin;
 import com.example.grapplinghook.utils.ItemUtils;
+import org.bukkit.Bukkit;
+import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
+import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Snowball;
 import org.bukkit.event.EventHandler;
@@ -16,6 +19,7 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataType;
+import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.Vector;
 
 import java.util.HashMap;
@@ -27,6 +31,10 @@ public class GrappleListener implements Listener {
     private final GrapplingHookPlugin plugin;
     private final NamespacedKey projectileKey;
     private final Map<UUID, Long> cooldowns = new HashMap<>();
+    private final Map<UUID, BukkitTask> ropeTasks = new HashMap<>();
+
+    private static final Particle.DustOptions ROPE_DUST =
+            new Particle.DustOptions(Color.fromRGB(120, 85, 45), 1.0f);
 
     public GrappleListener(GrapplingHookPlugin plugin) {
         this.plugin = plugin;
@@ -74,6 +82,25 @@ public class GrappleListener implements Listener {
         player.getWorld().playSound(player.getLocation(), Sound.ENTITY_ENDER_DRAGON_FLAP, 1.0f, 1.5f);
         player.getWorld().spawnParticle(Particle.CRIT, player.getLocation().add(0, 1, 0), 15, 0.2, 0.2, 0.2, 0.1);
         player.sendActionBar(ItemUtils.color(plugin.getConfigManager().getMsgHookFired()));
+
+        BukkitTask task = Bukkit.getScheduler().runTaskTimer(plugin, new Runnable() {
+            @Override
+            public void run() {
+                if (projectile.isDead() || !projectile.isValid()) {
+                    BukkitTask self = ropeTasks.remove(uuid);
+                    if (self != null) {
+                        self.cancel();
+                    }
+                    return;
+                }
+                drawRope(player.getEyeLocation(), projectile.getLocation());
+            }
+        }, 0L, 1L);
+
+        BukkitTask existing = ropeTasks.put(uuid, task);
+        if (existing != null) {
+            existing.cancel();
+        }
     }
 
     @EventHandler
@@ -86,6 +113,11 @@ public class GrappleListener implements Listener {
         }
         if (!(snowball.getShooter() instanceof Player player)) {
             return;
+        }
+
+        BukkitTask task = ropeTasks.remove(player.getUniqueId());
+        if (task != null) {
+            task.cancel();
         }
 
         Location targetLoc;
@@ -116,4 +148,26 @@ public class GrappleListener implements Listener {
         player.getWorld().playSound(playerLoc, Sound.ENTITY_BAT_TAKEOFF, 1.0f, 1.2f);
         player.getWorld().spawnParticle(Particle.CLOUD, playerLoc, 20, 0.3, 0.1, 0.3, 0.05);
     }
-                                    }
+
+    private void drawRope(Location from, Location to) {
+        World world = from.getWorld();
+        if (world == null) {
+            return;
+        }
+
+        Vector direction = to.toVector().subtract(from.toVector());
+        double distance = direction.length();
+        if (distance < 0.1) {
+            return;
+        }
+
+        Vector step = direction.normalize().multiply(0.3);
+        Location point = from.clone();
+        int steps = (int) (distance / 0.3);
+
+        for (int i = 0; i < steps; i++) {
+            point.add(step);
+            world.spawnParticle(Particle.DUST, point, 1, 0, 0, 0, 0, ROPE_DUST);
+        }
+    }
+    }
